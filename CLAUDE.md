@@ -1,6 +1,4 @@
-
 Default to using Bun instead of Node.js.
-
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
 - Use `bun test` instead of `jest` or `vitest`
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
@@ -9,8 +7,10 @@ Default to using Bun instead of Node.js.
 - Use `bunx <package> <command>` instead of `npx <package> <command>`
 - Bun automatically loads .env, so don't use dotenv.
 
-## APIs
+## Code style
+- Keep comments short — max 2 lines, whether it's a `//` comment or a `/** */` TSDoc/JSDoc block.
 
+## APIs
 - `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
 - `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
 - `Bun.redis` for Redis. Don't use `ioredis`.
@@ -20,26 +20,20 @@ Default to using Bun instead of Node.js.
 - Bun.$`ls` instead of execa.
 
 ## Testing
-
 Use `bun test` to run tests.
-
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
-
 test("hello world", () => {
   expect(1).toBe(1);
 });
 ```
 
 ## Frontend
-
 Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
 
 Server:
-
 ```ts#index.ts
 import index from "./index.html"
-
 Bun.serve({
   routes: {
     "/": index,
@@ -80,25 +74,19 @@ HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will tr
 ```
 
 With the following `frontend.tsx`:
-
 ```tsx#frontend.tsx
 import React from "react";
 import { createRoot } from "react-dom/client";
-
 // import .css files directly and it works
 import './index.css';
-
 const root = createRoot(document.body);
-
 export default function Frontend() {
   return <h1>Hello, world!</h1>;
 }
-
 root.render(<Frontend />);
 ```
 
 Then, run index.ts
-
 ```sh
 bun --hot ./index.ts
 ```
