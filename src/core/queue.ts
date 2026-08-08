@@ -64,6 +64,7 @@ export class Queue {
     options: {
       pollInterval?: number;
       onError?: (job: Job, error: unknown) => void;
+      onDeadLetter?: (job: Job) => void;
     } = {},
   ): Worker {
     const worker = new Worker({
@@ -71,7 +72,7 @@ export class Queue {
       topic,
       group: this.name,
       handler,
-      pollInterval: options.pollInterval,
+      ...options,
     });
     worker.start();
     return worker;
