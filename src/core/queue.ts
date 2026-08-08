@@ -14,14 +14,10 @@ export interface QueueOptions {
 
 /** Producer-consumer queue: turns user input into complete jobs and hands them to storage. */
 export class Queue {
-  private readonly adapter: PersistenceAdapter;
-
   constructor(
     private readonly name: string,
     private readonly config: QueueOptions,
-  ) {
-    this.adapter = config.adapter;
-  }
+  ) {}
 
   /** Build a complete job from partial user input and enqueue it. */
   async add(
@@ -52,7 +48,7 @@ export class Queue {
       traceparent: null,
     };
 
-    await this.adapter.enqueue(job);
+    await this.config.adapter.enqueue(job);
     return job;
   }
 
