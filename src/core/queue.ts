@@ -5,6 +5,7 @@ import {
   type EnqueueOptions,
   type Job,
 } from "./job";
+import { Worker } from "./worker";
 
 export interface QueueOptions {
   adapter: PersistenceAdapter;
@@ -53,7 +54,23 @@ export class Queue {
   }
 
   /** Start a worker loop pulling `topic` off this queue. */
-  process(topic: string, handler: (job: Job) => Promise<void>): never {
-    throw new Error("not implemented — needs worker.ts");
+
+  // queue.process('send_sms', async (job) => {
+  //  await twilio.send(job.payload.phone);
+  // });
+  process(
+    topic: string,
+    handler: (job: Job) => Promise<void>,
+    options: { pollInterval?: number } = {},
+  ): Worker {
+    const worker = new Worker({
+      adapter: this.config.adapter,
+      topic,
+      group: this.name,
+      handler,
+      pollInterval: options.pollInterval,
+    });
+    worker.start();
+    return worker;
   }
 }
