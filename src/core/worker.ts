@@ -12,6 +12,8 @@ export interface WorkerOptions {
   pollInterval?: number;
   /** Called with whatever the handler threw, before the retry decision is made. */
   onError?: (job: Job, error: unknown) => void;
+  /** Called once a job has exhausted its attempts and been parked in the DLQ. */
+  onDeadLetter?: (job: Job) => void;
 }
 
 /** Pulls jobs off one topic/group and runs them, applying retry and DLQ policy. */
@@ -75,6 +77,7 @@ export class Worker {
     if (attemptsUsed >= job.maxAttempts) {
       // out of retries — park it
       await this.options.adapter.moveToDLQ(job.id);
+      this.options.onDeadLetter?.(job);
       return;
     }
 
