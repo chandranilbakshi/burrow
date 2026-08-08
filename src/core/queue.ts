@@ -61,7 +61,10 @@ export class Queue {
   process(
     topic: string,
     handler: (job: Job) => Promise<void>,
-    options: { pollInterval?: number } = {},
+    options: {
+      pollInterval?: number;
+      onError?: (job: Job, error: unknown) => void;
+    } = {},
   ): Worker {
     const worker = new Worker({
       adapter: this.config.adapter,

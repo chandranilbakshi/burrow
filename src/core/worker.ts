@@ -10,6 +10,8 @@ export interface WorkerOptions {
   handler: (job: Job) => Promise<void>;
   /** How long to wait before polling again when the queue is empty. */
   pollInterval?: number;
+  /** Called with whatever the handler threw, before the retry decision is made. */
+  onError?: (job: Job, error: unknown) => void;
 }
 
 /** Pulls jobs off one topic/group and runs them, applying retry and DLQ policy. */
@@ -59,7 +61,8 @@ export class Worker {
       await this.options.handler(job);
       // it resolved, so the job succeeded — tell the adapter
       await this.options.adapter.ack(job.id);
-    } catch {
+    } catch (error) {
+      this.options.onError?.(job, error);
       await this.handleFailure(job);
     }
   }
