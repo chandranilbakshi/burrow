@@ -1,10 +1,5 @@
 import type { PersistenceAdapter } from "../adapters/interface";
-import {
-  DEFAULT_MAX_ATTEMPTS,
-  DEFAULT_VISIBILITY_TIMEOUT_MS,
-  type EnqueueOptions,
-  type Job,
-} from "./job";
+import { createJob, type EnqueueOptions, type Job } from "./job";
 import { Worker } from "./worker";
 
 export interface QueueOptions {
@@ -26,28 +21,7 @@ export class Queue {
     payload: unknown,
     options: EnqueueOptions = {},
   ): Promise<Job> {
-    const now = Date.now();
-
-    const job: Job = {
-      id: crypto.randomUUID(),
-      topic,
-      consumerGroup: this.name,
-      payload,
-      status: "pending",
-      createdAt: now,
-      attempts: 0,
-      visibleAt: now + (options.delay ?? 0),
-      maxAttempts:
-        options.maxAttempts ??
-        this.config.defaultMaxAttempts ??
-        DEFAULT_MAX_ATTEMPTS,
-      visibilityTimeout:
-        options.visibilityTimeout ??
-        this.config.defaultVisibilityTimeout ??
-        DEFAULT_VISIBILITY_TIMEOUT_MS,
-      // TODO: Phase 4 — capture the active W3C traceparent here
-      traceparent: null,
-    };
+    const job = createJob(topic, this.name, payload, options, this.config);
 
     await this.config.adapter.enqueue(job);
     return job;
