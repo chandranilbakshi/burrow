@@ -31,3 +31,41 @@ export interface EnqueueOptions {
 }
 
 export type JobStatus = "pending" | "invisible" | "failed" | "completed";
+
+/** Queue/bus-level fallbacks applied when a per-call option is omitted. */
+export interface JobDefaults {
+  defaultMaxAttempts?: number;
+  defaultVisibilityTimeout?: number;
+}
+
+/** Build a complete job from partial user input. Shared by Queue.add and EventBus.publish. */
+export function createJob(
+  topic: string,
+  consumerGroup: string,
+  payload: unknown,
+  options: EnqueueOptions = {},
+  defaults: JobDefaults = {},
+): Job {
+  const now = Date.now();
+
+  return {
+    id: crypto.randomUUID(),
+    topic,
+    consumerGroup,
+    payload,
+    status: "pending",
+    createdAt: now,
+    attempts: 0,
+    visibleAt: now + (options.delay ?? 0),
+    maxAttempts:
+      options.maxAttempts ??
+      defaults.defaultMaxAttempts ??
+      DEFAULT_MAX_ATTEMPTS,
+    visibilityTimeout:
+      options.visibilityTimeout ??
+      defaults.defaultVisibilityTimeout ??
+      DEFAULT_VISIBILITY_TIMEOUT_MS,
+    // TODO: Phase 4 — capture the active W3C traceparent here
+    traceparent: null,
+  };
+}
